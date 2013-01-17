@@ -37,7 +37,7 @@ function speed_test()
 
     echo
     echo Testing 2.000.000.000
-    time echo 1000000 | $1 > /dev/null
+    time echo 2000000000 | $1 > /dev/null
 }
 
 echo "=============== Zinc test =================="
