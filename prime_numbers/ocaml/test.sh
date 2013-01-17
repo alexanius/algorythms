@@ -1,6 +1,13 @@
 #!/bin/bash
 
-# this is file for testing speed and correctness of ocaml program
+# This is file for testing speed and correctness of ocaml program
+#
+# This is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+#
+# @author alexanius
 
 # geterate Zinc executable
 ocamlc -w "+A" -warn-error "+A" -o zinc.out sieve_of_eratosthenes.ml sieve_of_eratosthenes_main.ml
@@ -27,6 +34,10 @@ function speed_test()
     echo
     echo Testing 1.000.000
     time echo 1000000 | $1 > /dev/null
+
+    echo
+    echo Testing 2.000.000.000
+    time echo 1000000 | $1 > /dev/null
 }
 
 echo "=============== Zinc test =================="
@@ -35,7 +46,7 @@ speed_test ./zinc.out
 echo "=============== Native O0 test =================="
 speed_test ./opt.out
 
-echo "=============== Native O3 test =================="
+echo "=============== Native unsafe test =================="
 speed_test ./opt_unsafe.out
 
 # clear temp files
