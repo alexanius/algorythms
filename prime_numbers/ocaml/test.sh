@@ -21,31 +21,31 @@ function speed_test()
 {
     echo
     echo Testing 1000
-    time echo 1000 | $1 > /dev/null
+    /usr/bin/time -f "%e %M" bash -c "echo 1000 | $1 > /dev/null"
 
     echo
     echo Testing 10.000
-    time echo 10000 | $1 > /dev/null
+    /usr/bin/time -f "%e %M" bash -c "echo 10000 | $1 > /dev/null"
 
     echo
     echo Testing 100.000
-    time echo 100000 | $1 > /dev/null
+    /usr/bin/time -f "%e %M" bash -c "echo 100000 | $1 > /dev/null"
 
     echo
     echo Testing 1.000.000
-    time echo 1000000 | $1 > /dev/null
+    /usr/bin/time -f "%e %M" bash -c "echo 1000000 | $1 > /dev/null"
 
     echo
     echo Testing 10.000.000
-    time echo 10000000 | $1 > /dev/null
+    /usr/bin/time -f "%e %M" bash -c "echo 10000000 | $1 > /dev/null"
 
     echo
     echo Testing 100.000.000
-    time echo 100000000 | $1 > /dev/null
+    /usr/bin/time -f "%e %M" bash -c "echo 100000000 | $1 > /dev/null"
 
     echo
     echo Testing 1.000.000.000
-    time echo 1000000000 | $1 > /dev/null
+    /usr/bin/time -f "%e %M" bash -c "echo 1000000000 | $1 > /dev/null"
 }
 
 echo "=============== Zinc test =================="
@@ -58,4 +58,4 @@ echo "=============== Native unsafe test =================="
 speed_test ./opt_unsafe.out
 
 # clear temp files
-rm *.out *cmi *cmo *cmx *o
+rm *.out *.cmi *.cmo *.cmx *.o
