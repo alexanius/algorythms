@@ -48,14 +48,35 @@ function speed_test()
     /usr/bin/time -f "%e %M" bash -c "echo 1000000000 | $1 > /dev/null"
 }
 
-echo "=============== Zinc test =================="
+function correctness_test()
+{
+    echo 104730 | $1 > res
+    diff ../primes_lesser_than_104730 res
+    if [ $? != 0 ]
+    then
+        echo !!! Error
+    else
+        echo Ok
+    fi
+}
+
+echo "=============== Zinc speed test =================="
 speed_test ./zinc.out
 
-echo "=============== Native O0 test =================="
+echo "=============== Native speed test =================="
 speed_test ./opt.out
 
-echo "=============== Native unsafe test =================="
+echo "=============== Native unsafe speed test =================="
 speed_test ./opt_unsafe.out
 
+echo "=============== Zinc correctness test =================="
+correctness_test ./zinc.out
+
+echo "=============== Native correctness test =================="
+correctness_test ./opt.out
+
+echo "=============== Native unsafe correctness test =================="
+correctness_test ./opt_unsafe.out
+
 # clear temp files
-rm *.out *.cmi *.cmo *.cmx *.o
+rm *.out *.cmi *.cmo *.cmx *.o res
