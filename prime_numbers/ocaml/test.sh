@@ -36,8 +36,16 @@ function speed_test()
     time echo 1000000 | $1 > /dev/null
 
     echo
-    echo Testing 2.000.000.000
-    time echo 2000000000 | $1 > /dev/null
+    echo Testing 10.000.000
+    time echo 10000000 | $1 > /dev/null
+
+    echo
+    echo Testing 100.000.000
+    time echo 100000000 | $1 > /dev/null
+
+    echo
+    echo Testing 1.000.000.000
+    time echo 1000000000 | $1 > /dev/null
 }
 
 echo "=============== Zinc test =================="

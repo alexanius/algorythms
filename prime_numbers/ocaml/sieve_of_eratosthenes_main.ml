@@ -12,6 +12,6 @@ version.
 
 let l = Sieve_of_eratosthenes.sieve_of_eratosthenes (read_int())
 in
-List.iter (function x -> Printf.printf "%d " x) l;
+Queue.iter (function x -> Printf.printf "%d " x) l;
 Printf.printf "\n";
 ;;
