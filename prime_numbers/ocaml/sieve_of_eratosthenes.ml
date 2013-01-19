@@ -8,24 +8,7 @@ version.
 
 @version 0.01
 @author alexanius
- *)
-
-(*
-@param a array of bool where a[i] == true menas that a is prime
-@param q queue for prime numbers
-@param i current number
-@param max size of array
-
-Convert array of numbers to queue, putting there only prime numbers
 *)
-let rec filter_prime_numbers = fun a q i max ->
-	if i <= max then
-	(if (Array.get a i) = true then
-		Queue.add i q;
-	filter_prime_numbers a q (i + 1) max;
-	)
-;;
-
 
 (**
 @param x left bound of counting prime numbers
@@ -33,6 +16,8 @@ let rec filter_prime_numbers = fun a q i max ->
 Count all prime numbers that are less than x
 *)
 let sieve_of_eratosthenes = fun x ->
+
+
 	(**
 	@param a array of boolean where true means prime
 	@param max left bound of counting prime numbers
@@ -42,6 +27,8 @@ let sieve_of_eratosthenes = fun x ->
 	only elements with prime indices will be `true'.
 	*)
 	let sowing = fun a max ->
+
+
 		(**
 		@param a array of boolean where true means prime
 		@param i current index
@@ -55,6 +42,8 @@ let sieve_of_eratosthenes = fun x ->
 				(Array.set a i false;
 				sowing_tail a (i + step) step max)
 		in
+
+
 		(**
 		@param a array of boolean where true means prime
 		@param i current index
@@ -72,13 +61,34 @@ let sieve_of_eratosthenes = fun x ->
 		(*** start counting and return prime number quantity *)
 		sowing_head a 2 max
 	in
+
+
 	let a = Array.make (x + 1) true;		(** `+ 1' because it's easy when element index is equal to real number. So we have a[0] -> 0, a[1] -> 1 *)
 	in
-	Array.set a 0 false;		(** we know, it's not prime *)
+	(Array.set a 0 false;		(** we know, it's not prime *)
 	Array.set a 1 false;		(** we know, it's not prime *)
-	sowing a (Array.length a);
-	let q = Queue.create ()
+	sowing a (Array.length a)
+	);
+	let z = Queue.create ()
 	in
-	filter_prime_numbers a q 2 ((Array.length a) - 1);
-	q
+
+	(**
+	@param a array of bool where a[i] == true menas that a is prime
+	@param q queue for prime numbers
+	@param i current number
+	@param max size of array
+
+	Convert array of numbers to queue, putting there only prime numbers
+	*)
+	let rec filter_prime_numbers = fun a q i max ->
+		if i <= max then
+		(if (Array.get a i) = true then
+			Queue.add i q;
+		filter_prime_numbers a q (i + 1) max;
+		)
+	in
+
+
+	filter_prime_numbers a z 2 ((Array.length a) - 1);
+	z
 ;;
