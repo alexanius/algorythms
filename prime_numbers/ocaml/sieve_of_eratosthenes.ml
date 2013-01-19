@@ -69,8 +69,7 @@ let sieve_of_eratosthenes = fun x ->
 	Array.set a 1 false;		(** we know, it's not prime *)
 	sowing a (Array.length a)
 	);
-	let z = Queue.create ()
-	in
+
 
 	(**
 	@param a array of bool where a[i] == true menas that a is prime
@@ -80,15 +79,19 @@ let sieve_of_eratosthenes = fun x ->
 
 	Convert array of numbers to queue, putting there only prime numbers
 	*)
-	let rec filter_prime_numbers = fun a q i max ->
-		if i <= max then
+	let rec filter_prime_numbers = fun a l i ->
+		if i > 1 then
 		(if (Array.get a i) = true then
-			Queue.add i q;
-		filter_prime_numbers a q (i + 1) max;
+			(filter_prime_numbers a (i :: l) (i - 1);
+			)
+		else
+			(filter_prime_numbers a l (i - 1);
+			)
 		)
+		else
+		 l
 	in
 
 
-	filter_prime_numbers a z 2 ((Array.length a) - 1);
-	z
+	filter_prime_numbers a [] ((Array.length a) - 1);
 ;;
