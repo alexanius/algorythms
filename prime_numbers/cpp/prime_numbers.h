@@ -15,6 +15,7 @@ namespace primeNumbers
 typedef std::unique_ptr<std::list<int>> IntList;
 
 IntList sieveOfEratosthenes(unsigned int max);
+IntList sieveOfSundaram(unsigned int max);
 
 }
 
