@@ -1,82 +1,113 @@
 #!/bin/bash
 
-# This is file for testing speed and correctness of ocaml program
-#
 # This is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
 # Software Foundation; either version 3, or (at your option) any later
 # version.
+
+# This is file for testing speed and correctness of ocaml program
+#
+# You should have GNU version of `time' util. On my system you can install it
+# with command:
+#
+# $ emerge sys-process/time
+#
 #
 # @author alexanius
+# @version 0.01.4
 
-# geterate Zinc executable
-ocamlc -w "+A" -warn-error "+A" -o zinc.out sieve_of_eratosthenes.ml sieve_of_eratosthenes_main.ml
-# geterate native executable
-ocamlopt -w "+A" -warn-error "+A" -o opt.out sieve_of_eratosthenes.ml sieve_of_eratosthenes_main.ml
-# geterate native unsafe executable
-ocamlopt -w "+A" -warn-error "+A" -o opt_unsafe.out sieve_of_eratosthenes.ml sieve_of_eratosthenes_main.ml
-
-# speed test
-function speed_test()
+# $1 - testing mode name
+# $2 - maximal number
+# $3 - executable to test
+#
+# this function runs single test and prints resource usage
+function single_test()
 {
-    echo
-    echo Testing 1000
-    /usr/bin/time -f "%e %M" bash -c "echo 1000 | $1 > /dev/null"
+    a=$((/usr/bin/time -f "%e %M" bash -c "echo $2 | $3 >& /dev/null") 2>&1 | tr -d '\n')
+    echo $a | grep "non-zero status" > /dev/null
 
-    echo
-    echo Testing 10.000
-    /usr/bin/time -f "%e %M" bash -c "echo 10000 | $1 > /dev/null"
-
-    echo
-    echo Testing 100.000
-    /usr/bin/time -f "%e %M" bash -c "echo 100000 | $1 > /dev/null"
-
-    echo
-    echo Testing 1.000.000
-    /usr/bin/time -f "%e %M" bash -c "echo 1000000 | $1 > /dev/null"
-
-    echo
-    echo Testing 10.000.000
-    /usr/bin/time -f "%e %M" bash -c "echo 10000000 | $1 > /dev/null"
-
-    echo
-    echo Testing 100.000.000
-    /usr/bin/time -f "%e %M" bash -c "echo 100000000 | $1 > /dev/null"
-
-    echo
-    echo Testing 1.000.000.000
-    /usr/bin/time -f "%e %M" bash -c "echo 1000000000 | $1 > /dev/null"
-}
-
-function correctness_test()
-{
-    echo 104730 | $1 > res
-    diff ../primes_lesser_than_104730 res
-    if [ $? != 0 ]
+    if [ $? != 1 ]
     then
-        echo !!! Error
+        printf "%b %b - -\n" $1 $2
     else
-        echo Ok
+        printf "%b %b %b %b\n" $1 $2 $a
     fi
 }
 
-echo "=============== Zinc speed test =================="
-speed_test ./zinc.out
+# $1 - executable for test
+# $2 - testing mode name
+# this tests the execution time and used memory of a program
+function speed_test()
+{
+    echo "Mode Number Time Mem "
+    single_test $2 "1000" $1
+    single_test $2 "10000" $1
+    single_test $2 "100000" $1
+    single_test $2 "1000000" $1
+    single_test $2 "10000000" $1
+    single_test $2 "100000000" $1
+    single_test $2 "1000000000" $1
+}
 
-echo "=============== Native speed test =================="
-speed_test ./opt.out
+# $1 - name of compiler mode
+# $2 - compiler name
+# $3 - executable name
+# $4 - source files
+# $5 - other keys
+#
+# Runs compilation of executable and exits if it has failed
+function compile()
+{
+    printf "compiling $1: "
+    $2 -w "+A" -warn-error "+A" $5 -o $3 $4
+    if [ $? != 0 ]
+    then
+        printf "error\n"
+        exit 1
+    else
+        printf "ok\n"
+    fi
+}
 
-echo "=============== Native unsafe speed test =================="
-speed_test ./opt_unsafe.out
+# $1 is the name of alorythm
+#
+# this tests the correcntess of result for numbers lesser than 104730
+function correctness_test()
+{
+    printf "Correctness test $1: "
+    echo 104730 | $1 > res
+    diff ../primes_lesser_than_104730 res > /dev/null
+    if [ $? != 0 ]
+    then
+        printf "error\n"
+        exit 2
+    else
+        printf "ok\n"
+        rm res
+    fi
+}
 
-echo "=============== Zinc correctness test =================="
-correctness_test ./zinc.out
+# runs all tests
+function run_tests()
+{
+    correctness_test ./zinc.out "zinc"
+    speed_test ./zinc.out "zinc"
 
-echo "=============== Native correctness test =================="
-correctness_test ./opt.out
+    correctness_test ./opt.out "opt"
+    speed_test ./opt.out "opt"
 
-echo "=============== Native unsafe correctness test =================="
-correctness_test ./opt_unsafe.out
+    correctness_test ./opt_unsafe.out "opt_unsafe"
+    speed_test ./opt_unsafe.out "opt_unsafe"
 
-# clear temp files
-rm *.out *.cmi *.cmo *.cmx *.o res
+    # clear temp files
+    rm *.out *.cmi *.cmo *.cmx *.o
+}
+
+# generate Zinc executable
+compile "zinc" "ocamlc" "zinc.out" "sieve_of_eratosthenes.ml sieve_of_eratosthenes_main.ml" ""
+# generate native executable
+compile "native" "ocamlopt" "opt.out" "sieve_of_eratosthenes.ml sieve_of_eratosthenes_main.ml" ""
+# generate native unsafe executable
+compile "unsafe" "ocamlopt" "opt_unsafe.out" "sieve_of_eratosthenes.ml sieve_of_eratosthenes_main.ml" "-unsafe"
+
+run_tests

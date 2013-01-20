@@ -109,9 +109,9 @@ echo "Sieve of Sundaram"
 
 # generate -O0 executable
 compile "-O0" "-O0" "-D SIEVE_OF_SUNDARAM" \
-"main.cpp sieve_of_sundaram.cpp" -o "slow.out"
+"main.cpp sieve_of_sundaram.cpp" "slow.out"
 # geterate -O3 executable
 compile "-O3" "-O3"  "-D SIEVE_OF_SUNDARAM" \
-"main.cpp sieve_of_sundaram.cpp" -o "fast.out"
+"main.cpp sieve_of_sundaram.cpp" "fast.out"
 
 run_tests
