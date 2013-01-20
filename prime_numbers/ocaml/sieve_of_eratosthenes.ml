@@ -6,7 +6,7 @@ the terms of the GNU General Public License as published by the Free
 Software Foundation; either version 3, or (at your option) any later
 version.
 
-@version 0.01
+@version 0.02
 @author alexanius
 *)
 
