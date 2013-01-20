@@ -14,91 +14,104 @@
 #
 #
 # @author alexanius
-# @version 0.01.2
+# @version 0.01.3
 
+# $1 - testing mode name
+# $2 - maximal number
+# $3 - executable to test
+#
+# this function runs single test and prints resource usage
+function single_test()
+{
+    a=$((/usr/bin/time -f "%e %M" bash -c "echo $2 | $3 > /dev/null") 2>&1 | tr -d '\n')
+    printf "%b %b %b %b\n" $1 $2 $a
+}
+
+# $1 - executable for test
+# $2 - testing mode name
 # this tests the execution time and used memory of a program
 function speed_test()
 {
-    echo
-    echo Testing 1000
-    /usr/bin/time -f "%e %M" bash -c "echo 1000 | $1 > /dev/null"
-
-    echo
-    echo Testing 10.000
-    /usr/bin/time -f "%e %M" bash -c "echo 10000 | $1 > /dev/null"
-
-    echo
-    echo Testing 100.000
-    /usr/bin/time -f "%e %M" bash -c "echo 100000 | $1 > /dev/null"
-
-    echo
-    echo Testing 1.000.000
-    /usr/bin/time -f "%e %M" bash -c "echo 1000000 | $1 > /dev/null"
-
-    echo
-    echo Testing 10.000.000
-    /usr/bin/time -f "%e %M" bash -c "echo 10000000 | $1 > /dev/null"
-
-    echo
-    echo Testing 100.000.000
-    /usr/bin/time -f "%e %M" bash -c "echo 100000000 | $1 > /dev/null"
-
-    echo
-    echo Testing 1.000.000.000
-    /usr/bin/time -f "%e %M" bash -c "echo 1000000000 | $1 > /dev/null"
+    echo "Mode Number Time Mem "
+    single_test $2 "1000" $1
+    single_test $2 "10000" $1
+    single_test $2 "100000" $1
+    single_test $2 "1000000" $1
+    single_test $2 "10000000" $1
+    single_test $2 "100000000" $1
+    single_test $2 "1000000000" $1
 }
 
+# $1 is the name of alorythm
+#
 # this tests the correcntess of result for numbers lesser than 104730
 function correctness_test()
 {
+    printf "Correctness test $1: "
     echo 104730 | $1 > res
     diff ../primes_lesser_than_104730 res > /dev/null
     if [ $? != 0 ]
     then
-        echo !!! Error
+        printf "error\n"
+        exit
     else
-        echo Ok
+        printf "ok\n"
+        rm res
     fi
 }
 
+# runs all tests
 function run_tests()
 {
-    echo "=============== O0 speed test =================="
-    speed_test ./slow.out
+    correctness_test ./slow.out "-O0"
+    speed_test ./slow.out "-O0"
 
-    echo "=============== O3 speed test =================="
-    speed_test ./fast.out
-
-    echo "=============== O0 correctness test =================="
-    correctness_test ./slow.out
-
-    echo "=============== O3 correctness test =================="
-    correctness_test ./fast.out
+    correctness_test ./fast.out "-O3"
+    speed_test ./fast.out "-O3"
 
     # clear temp files
-    rm *.out res
+    rm *.out
 }
 
-echo "! SIEVE OF ERATOSTHENES !"
-# geterate -O0 executable
-g++ -std=c++0x -Wall -pedantic -Werror -O0 \
--D SIEVE_OF_ERATOSTHENES \
-main.cpp sieve_of_eratosthenes.cpp -o slow.out
-# geterate -O3 executable
-g++ -std=c++0x -Wall -pedantic -Werror -O3 \
--D SIEVE_OF_ERATOSTHENES \
-main.cpp sieve_of_eratosthenes.cpp -o fast.out
+# $1 - name of compiler mode
+# $2 - oprimisation keys
+# $3 - definitions
+# $4 - source files
+# $5 - executable name
+#
+# Runs compilation of executable and exits if it has failed
+function compile()
+{
+    printf "compiling $1: "
+    g++ -std=c++0x -Wall -pedantic -Werror $2 $3 $4 -o $5
+    if [ $? != 0 ]
+    then
+        printf "error\n"
+        exit
+    else
+        printf "ok\n"
+    fi
+}
+
+echo "Sieve of Eratosthenes"
+
+# generate -O0 executable
+compile "-O0" "-O0" "-D SIEVE_OF_ERATOSTHENES" \
+"main.cpp sieve_of_eratosthenes.cpp" "slow.out"
+
+# generate -O3 executable
+compile "-O3" "-O3"  "-D SIEVE_OF_ERATOSTHENES" \
+"main.cpp sieve_of_eratosthenes.cpp" "fast.out"
 
 run_tests
 
-echo "! SIEVE OF SUNDARAM !"
-# geterate -O0 executable
-g++ -std=c++0x -Wall -pedantic -Werror -O0 \
--D SIEVE_OF_SUNDARAM \
-main.cpp sieve_of_sundaram.cpp -o slow.out
+echo "Sieve of Sundaram"
+
+# generate -O0 executable
+compile "-O0" "-O0" "-D SIEVE_OF_SUNDARAM" \
+"main.cpp sieve_of_sundaram.cpp" -o "slow.out"
 # geterate -O3 executable
-g++ -std=c++0x -Wall -pedantic -Werror -O3 \
--D SIEVE_OF_SUNDARAM \
-main.cpp sieve_of_sundaram.cpp -o fast.out
+compile "-O3" "-O3"  "-D SIEVE_OF_SUNDARAM" \
+"main.cpp sieve_of_sundaram.cpp" -o "fast.out"
 
 run_tests
