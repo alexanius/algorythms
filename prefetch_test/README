@@ -1,0 +1,25 @@
+The example to show the effect of prefetch builtin.
+
+$ gcc regular_load.c && perf stat -B -e cache-misses,cache-references ./a.out
+Simple start
+Simple seconds: 3.935150
+
+ Performance counter stats for './a.out':
+
+       111 588 965      cache-misses:u            #   71,735 % of all cache refs
+       155 557 440      cache-references:u
+
+       6,468928214 seconds time elapsed
+
+
+$ gcc -DPREF regular_load.c && perf stat -B -e cache-misses,cache-references ./a.out
+Prefetch start
+Prefetch seconds: 3.962791
+
+ Performance counter stats for './a.out':
+
+        71 325 602      cache-misses:u            #   29,053 % of all cache refs
+       245 499 956      cache-references:u
+
+       6,456740799 seconds time elapsed
+
