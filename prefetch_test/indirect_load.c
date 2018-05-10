@@ -1,3 +1,4 @@
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -15,6 +16,8 @@ static int B = 20; // Some coefficient
 static int C = 30; // Some coefficient
 static int D = 40; // Some coefficient
 static int E = 50; // Some coefficient
+
+static Value * Data; // Array with values to be counted
 
 // Here we make loads of the trach array to eliminate all useful lines from cache
 static void poisonCache(void)
@@ -39,44 +42,24 @@ static double getTimeInSeconds(void)
 // Create an array for measurement
 static Value ** createDataArray(void)
 {
-    Value ** res;
+    Value   ** res; /* Array of pointers to data */
+
     res = malloc(ARR_SIZE * sizeof(Value *));
 
-    for(int i = 0; i < ARR_SIZE / 2; i+=3)
+    Data = malloc(ARR_SIZE * sizeof(Value));
+
+    /* Initialization of data */
+    srand(time(NULL));
+    for(int i = 0; i < ARR_SIZE; i++)
     {
-        void * stub1, * stub2;
+        Data[i].val = 1.0 / rand();
+    }
 
-        res[ARR_SIZE - i - 1] = malloc(sizeof(Value));
-	res[ARR_SIZE - i - 1]->val = ARR_SIZE - i;
-
-	stub1 = malloc(64);
-
-        res[i + 1] = malloc(sizeof(Value));
-	res[i + 1]->val = i + 1;
-
-	stub2 = malloc(64);
-
-        res[ARR_SIZE - i - 3] = malloc(sizeof(Value));
-	res[ARR_SIZE - i - 3]->val = ARR_SIZE - i - 3;
-
-	free(stub1);
-	free(stub2);
-
-        res[i + 2] = malloc(sizeof(Value));
-	res[i + 2]->val = i + 2;
-
-	stub1 = malloc(64);
-
-        res[ARR_SIZE - i - 2] = malloc(sizeof(Value));
-	res[ARR_SIZE - i - 2]->val = ARR_SIZE - i - 2;
-
-	stub2 = malloc(64);
-
-        res[i] = malloc(sizeof(Value));
-	res[i]->val = i;
-
-	free(stub1);
-	free(stub2);
+    /* Setting pointers to random data elemnts */
+    srand(time(NULL));
+    for(int i = 0; i < ARR_SIZE; i++)
+    {
+        res[i] = &(Data[rand() % ARR_SIZE]);
     }
 
     return res;
@@ -85,11 +68,7 @@ static Value ** createDataArray(void)
 // Deleting our array
 static void deleteDataArray(Value ** data)
 {
-    for(int i = 0; i < ARR_SIZE; i++)
-    {
-        free(data[i]);
-    }
-
+    free(Data);
     free(data);
 }
 
@@ -113,8 +92,9 @@ double prefetchSumm(Value ** data)
     res = 0;
     for(int i = 0; i < ARR_SIZE; i++)
     {
-        int interval = 24;
-	__builtin_prefetch(&(data[i + interval]->val), 0, 0);
+        const int interval = 17;
+
+        __builtin_prefetch(&(data[i + interval]->val), 0, 0);
         res += data[i]->val * A * B + C - D * E;
     }
 
@@ -124,7 +104,7 @@ double prefetchSumm(Value ** data)
 int main(void)
 {
     Value ** data;
-    double start, finish;
+    double start, finish, res;
 
     data = createDataArray();
 
@@ -133,7 +113,7 @@ int main(void)
     poisonCache();
     printf("Simple start\n");
     start = getTimeInSeconds();
-    simpleSumm(data);
+    res = simpleSumm(data);
     finish = getTimeInSeconds();
     printf("Simple seconds: %f\n", finish - start);
 #else
@@ -141,11 +121,13 @@ int main(void)
     poisonCache();
     printf("Prefetch start\n");
     start = getTimeInSeconds();
-    prefetchSumm(data);
+    res = prefetchSumm(data);
     finish = getTimeInSeconds();
     printf("Prefetch seconds: %f\n", finish - start);
 #endif // PREF
 
     deleteDataArray(data);
+
+    return res;
 }
 
